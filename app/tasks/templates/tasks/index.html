@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>DocList</title>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+</head>
+<body>
+    <div class="container mx-auto mt-5">
+        <div>
+            <h1>To do list</h1>
+        </div>
+
+        <div class="row">
+            <div class="col-4">
+                <nav id="collection" class="list-group" role="tablist">
+                    {% for collection in collections %}
+                        {% include 'tasks/collection.html' with collection=collection %}
+                    {% endfor %}
+                </nav>
+
+                
+                <form method="POST" class="d-flex gap-2 mt-3">
+                    {% csrf_token %}
+
+                    
+                    <input type="text" name="collection-name" class="form-control" placeholder="Collection...">
+                    <button class="btn btn-success"
+                            hx-post="{% url 'add-collection' %}" 
+                            hx-target="#collection" 
+                            hx-swap="beforeend" 
+                            type="submit">Ajouter</button>
+                </form>  
+            </div>
+
+            <div class="col-8">
+                <form method="POST" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="task-description" class="form-control" placeholder="Tâche...">
+                    <button class="btn btn-success"
+                            hx-post="{% url 'add-task' %}" 
+                            hx-target="#tasks" 
+                            hx-vals='js:{collection: getCollectionFromURL()}'
+                            hx-swap="beforeend"
+                            type="submit">
+                        Ajouter
+                    </button>
+                </form>
+                <div id="tasks-container">
+                    {% include 'tasks/tasks.html' with tasks=tasks collection=collection %}
+                </div>     
+            </div>   
+        </div>
+        
+    </div>
+
+
+   
+
+    <script>
+        document.body.addEventListener("htmx:responseError", function(evt) {
+            alert(evt.detail.xhr.responseText);
+        })
+
+
+
+        function getCollectionFromURL() {
+            let url = new URL(window.location.href);
+            let searchParams = url.searchParams;
+            return searchParams.get("collection");
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+</body>
+</html>
